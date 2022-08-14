@@ -5,6 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="conf.ini" />
+    <None Remove="config.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="conf.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="config.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Information123.txt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Information.txt</LastGenOutput>
