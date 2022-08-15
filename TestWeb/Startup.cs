@@ -1,52 +1,41 @@
-using ConfigurationApp;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using MiddlewareExample;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using TestWeb.Models;
 
 namespace TestWeb
 {
     public class Startup
     {
-        public Startup(IConfiguration config)
+        public Startup(IConfiguration configuration)
         {
-            //AppConfiguration = config; - конфигурация по умолчанию
-
-            var builder = new ConfigurationBuilder().
-                AddJsonFile("person.json");
-            AppConfiguration = builder.Build();
+            Configuration = configuration;
         }
 
         // свойство, которое будет хранить конфигурацию
-        public IConfiguration AppConfiguration { get; set; }
+        public IConfiguration Configuration { get; set; }
 
-        public void ConfigureServices(IServiceCollection services) {
-            services.AddTransient<IMessageSender, EmailMessengerSender>();
-            services.AddTransient<TimeService>();
+        public void ConfigureServices(IServiceCollection services)
+        {
+            string connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<MobileContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddControllersWithViews();
         }
         public void Configure(IApplicationBuilder app)
         {
-            var tom = AppConfiguration.Get<Person>();
-            app.Run(async (context) =>
-            {
-                string name = $"<p>Name: {tom.Name}</p>";
-                string age = $"<p>Age: {tom.Age}</p>";
-                string company = $"<p>Company: {tom.Company?.Title}</p>";
-                string langs = "<p>Languages:</p><ul>";
-                foreach (var lang in tom.Languages)
-                {
-                    langs += $"<li><p>{lang}</p></li>";
-                }
-                langs += "</ul>";
+            app.UseDeveloperExceptionPage();
 
-                await context.Response.WriteAsync($"{name}{age}{company}{langs}");
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
